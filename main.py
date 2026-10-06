@@ -1,6 +1,6 @@
-# main.py
+# main.py - BETA VERSION 1.0 (No external requests library)
 import re
-import requests
+import urllib.request
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
@@ -10,7 +10,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 from kivy.utils import platform
 
-# 1. CATEGORIES (Added Anime)
+# 1. CATEGORIES
 CATEGORIES = {
     "Movies": "https://iptv-org.github.io/iptv/categories/movies.m3u",
     "Anime": "https://iptv-org.github.io/iptv/categories/animation.m3u",
@@ -18,12 +18,14 @@ CATEGORIES = {
     "Songs": "https://iptv-org.github.io/iptv/categories/music.m3u"
 }
 
-# 2. SIMPLE PARSER
+# 2. SIMPLE PARSER using built-in urllib (No extra dependencies)
 def get_channels(m3u_url):
     try:
-        response = requests.get(m3u_url, timeout=15)
-        response.raise_for_status()
-        lines = response.text.split('\n')
+        req = urllib.request.Request(m3u_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=15) as response:
+            text = response.read().decode('utf-8')
+            
+        lines = text.split('\n')
         channels = []
         for i in range(len(lines)):
             if lines[i].startswith('#EXTINF'):
@@ -43,7 +45,6 @@ class StreamBeta(App):
         Window.clearcolor = (0.1, 0.1, 0.1, 1)
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
 
-        # Dropdown to switch categories
         self.spinner = Spinner(
             text='Movies',
             values=list(CATEGORIES.keys()),
@@ -53,14 +54,12 @@ class StreamBeta(App):
         self.spinner.bind(text=self.load_category)
         layout.add_widget(self.spinner)
 
-        # Channel List
         self.scroll = ScrollView()
         self.grid = GridLayout(cols=1, spacing=10, size_hint_y=None)
         self.grid.bind(minimum_height=self.grid.setter('height'))
         self.scroll.add_widget(self.grid)
         layout.add_widget(self.scroll)
 
-        # Load initial category
         self.load_category(None, 'Movies')
         return layout
 
@@ -80,7 +79,6 @@ class StreamBeta(App):
             self.grid.add_widget(btn)
 
     def play_stream(self, instance):
-        # Opens the stream in VLC or MX Player
         if platform == 'android' and instance.stream_url:
             from jnius import autoclass
             Intent = autoclass('android.content.Intent')
