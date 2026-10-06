@@ -1,4 +1,4 @@
-# main.py - BETA VERSION 1.0 (No external requests library)
+# main.py - BETA VERSION 1.0
 import re
 import urllib.request
 from kivy.app import App
@@ -10,7 +10,6 @@ from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 from kivy.utils import platform
 
-# 1. CATEGORIES
 CATEGORIES = {
     "Movies": "https://iptv-org.github.io/iptv/categories/movies.m3u",
     "Anime": "https://iptv-org.github.io/iptv/categories/animation.m3u",
@@ -18,7 +17,6 @@ CATEGORIES = {
     "Songs": "https://iptv-org.github.io/iptv/categories/music.m3u"
 }
 
-# 2. SIMPLE PARSER using built-in urllib (No extra dependencies)
 def get_channels(m3u_url):
     try:
         req = urllib.request.Request(m3u_url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -39,7 +37,6 @@ def get_channels(m3u_url):
     except Exception as e:
         return [{"name": f"Error: {e}", "url": ""}]
 
-# 3. THE APP
 class StreamBeta(App):
     def build(self):
         Window.clearcolor = (0.1, 0.1, 0.1, 1)
